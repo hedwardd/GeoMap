@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { DeviceMotion } from 'expo-sensors';
+import * as Location from 'expo-location';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -16,6 +17,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     gamma: 0,
   });
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const _subscribe = () => {
     setSubscription(
@@ -35,10 +38,37 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     return () => _unsubscribe();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log(status);
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
   const { alpha, beta, gamma } = data;
   const alphaRounded = round(alpha),
     betaRounded = round(beta),
     gammaRounded = round(gamma);
+
+  if (location) {
+  }
+
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    const { latitude, longitude } = location.coords;
+    const latRounded = round(latitude),
+      lngRounded = round(longitude);
+    text = `lat: ${latRounded} lng: ${lngRounded}`;
+  }
 
   return (
     <View style={styles.container}>
@@ -46,6 +76,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
       <Text style={styles.title}>beta: {betaRounded}</Text>
       <Text style={styles.title}>gamma: {gammaRounded}</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <Text style={styles.title}>Coords: {text}</Text>
     </View>
   );
 }
