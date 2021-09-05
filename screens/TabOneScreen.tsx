@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { DeviceMotion, Magnetometer, ThreeAxisMeasurement } from 'expo-sensors';
 import * as Location from 'expo-location';
+import { Subscription } from '@unimodules/core';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
-import { Subscription } from '@unimodules/core';
+import { round, getAngle, getDirection, getDegree } from "../utils/calcs";
 
 DeviceMotion.setUpdateInterval(100);
 
@@ -39,7 +40,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const _subToMagnetometer = () => {
     setMagnetometerSub(
       Magnetometer.addListener((data) => {
-        setMagnetometer(_angle(data));
+        setMagnetometer(getAngle(data));
       })
     );
   };
@@ -87,8 +88,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     text = `lat: ${latRounded} lng: ${lngRounded}`;
   }
 
-  const degree = _degree(magnetometer);
-  const direction = _direction(degree);
+  const degree = getDegree(magnetometer);
+  const direction = getDirection(degree);
 
   return (
     <View style={styles.container}>
@@ -119,55 +120,3 @@ const styles = StyleSheet.create({
     width: '80%',
   },
 });
-
-const round = (n: number | undefined) => {
-  if (!n) {
-    return 0;
-  }
-
-  return Math.floor(n * 100) / 100;
-}
-
-const _angle = (magnetometer: ThreeAxisMeasurement) => {
-  let { x, y, z } = magnetometer;
-  let angle = 0;
-  if (Math.atan2(y, x) >= 0) {
-    angle = Math.atan2(y, x) * (180 / Math.PI);
-  } else {
-    angle = (Math.atan2(y, x) + 2 * Math.PI) * (180 / Math.PI);
-  }
-  return Math.round(angle);
-};
-
-const _direction = (degree: number) => {
-  if (degree >= 22.5 && degree < 67.5) {
-    return 'NE';
-  }
-  else if (degree >= 67.5 && degree < 112.5) {
-    return 'E';
-  }
-  else if (degree >= 112.5 && degree < 157.5) {
-    return 'SE';
-  }
-  else if (degree >= 157.5 && degree < 202.5) {
-    return 'S';
-  }
-  else if (degree >= 202.5 && degree < 247.5) {
-    return 'SW';
-  }
-  else if (degree >= 247.5 && degree < 292.5) {
-    return 'W';
-  }
-  else if (degree >= 292.5 && degree < 337.5) {
-    return 'NW';
-  }
-  else {
-    return 'N';
-  }
-};
-
-// TODO: Match the device top with pointer 0° degree. (By default 0° starts from the right of the device.) ?
-const _degree = (magnetometer: number) => {
-  return magnetometer;
-  // return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
-};
