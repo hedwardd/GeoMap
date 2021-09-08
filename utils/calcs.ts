@@ -48,9 +48,10 @@ export const getDirection = (degree: number) => {
   }
 };
 
+// TODO: Match the device top with pointer 0° degree. (By default 0° starts from the right of the device.) ?
 export const getDegree = (magnetometer: number) => {
-  // return magnetometer;
-  return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
+  return magnetometer;
+  // return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
 };
 
 export const deg2rad = (deg: number) => {
@@ -92,11 +93,3 @@ export const bearingBetweenPoints = (lat1: number, lon1: number, lat2: number, l
   const inDeg = (brng * 180 / Math.PI + 360) % 360; // in degrees
   return inDeg;
 };
-
-export const relativeDirection = (angle1: number, angle2: number) => {
-  const diff = angle2 - angle1;
-  if (Math.abs(diff) > 180) {
-    return (diff > 0) ? diff - 360 : diff + 360;
-  }
-  return diff;
-}
