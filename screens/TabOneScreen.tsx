@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet } from 'react-native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
@@ -8,14 +8,13 @@ import { RootTabScreenProps } from '../types';
 import { round, getDirection, rad2deg, bearingBetweenPoints, relativeDirection, angleDownUsingDistance, distanceFromLatLonInKm } from "../utils/calcs";
 import useMagnetometer from '../hooks/useMagnetometer';
 import useLocation from '../hooks/useLocation';
+import { DeviceContext } from '../context/DeviceContext';
 
 const BEIJING_LAT = 39.9042;
 const BEIJING_LON = 116.4074;
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  const [alpha, beta, gamma] = useDeviceRotation();
-  const compass = useMagnetometer();
-  const [location, locationError] = useLocation();
+  const { alpha, beta, gamma, compass, location, locationError } = useContext(DeviceContext);
 
   const alphaDeg = rad2deg(alpha),
     betaDeg = rad2deg(beta),
