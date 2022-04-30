@@ -48,9 +48,9 @@ export const getDirection = (degree: number) => {
   }
 };
 
-export const getDegree = (magnetometer: number) => {
+export const getCompassDirection = (headingFromDevice: number) => {
   // return magnetometer;
-  return magnetometer - 90 >= 0 ? magnetometer - 90 : magnetometer + 271;
+  return headingFromDevice - 90 >= 0 ? headingFromDevice - 90 : headingFromDevice + 271;
 };
 
 export const deg2rad = (deg: number) => {

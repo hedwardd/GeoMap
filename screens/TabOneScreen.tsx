@@ -5,7 +5,16 @@ import EditScreenInfo from '../components/EditScreenInfo';
 import useDeviceRotation from '../hooks/useDeviceMotion';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
-import { round, getDirection, rad2deg, bearingBetweenPoints, relativeDirection, angleDownUsingDistance, distanceFromLatLonInKm } from "../utils/calcs";
+import { 
+  round,
+  angleDownUsingDistance,
+  bearingBetweenPoints,
+  distanceFromLatLonInKm,
+  getCompassDirection,
+  getDirection,
+  rad2deg,
+  relativeDirection,
+} from "../utils/calcs";
 import useMagnetometer from '../hooks/useMagnetometer';
 import useLocation from '../hooks/useLocation';
 import { DeviceContext } from '../context/DeviceContext';
@@ -14,7 +23,14 @@ const BEIJING_LAT = 39.9042;
 const BEIJING_LON = 116.4074;
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
-  const { alpha, beta, gamma, compass, location, locationError } = useContext(DeviceContext);
+  const {
+    alpha,
+    beta,
+    gamma,
+    compass,
+    location: userLocation,
+    locationError,
+  } = useContext(DeviceContext);
 
   const alphaDeg = rad2deg(alpha),
     betaDeg = rad2deg(beta),
@@ -22,7 +38,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   const alphaRounded = round(alphaDeg),
     betaRounded = round(betaDeg),
     gammaRounded = round(gammaDeg);
-  const direction = getDirection(compass);
+  const compassDirection = getCompassDirection(alphaRounded);
+  const direction = getDirection(compassDirection);
 
   let locationText = 'Waiting..';
   let bearingText = 'Waiting..';
@@ -30,30 +47,58 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
   if (locationError) {
     locationText = "Permission to access location was denied.";
     bearingText = "Permission to access location was denied.";
-  } else if (location) {
-    const { latitude, longitude } = location.coords;
-    const latRounded = round(latitude),
-      lngRounded = round(longitude);
+  } else if (userLocation) {
+    const {
+      latitude: userLat,
+      longitude: userLon,
+    } = userLocation.coords;
+    const latRounded = round(userLat),
+      lngRounded = round(userLon);
       locationText = `lat: ${latRounded} lng: ${lngRounded}`;
-    const bearing = round(bearingBetweenPoints(latitude, longitude, BEIJING_LAT, BEIJING_LON));
-    const bearingDiff = round(relativeDirection(compass, bearing));
-    bearingText = `Bearing: ${bearing} (${bearingDiff})`;
-    const distance = round(distanceFromLatLonInKm(latitude, longitude, BEIJING_LAT, BEIJING_LON));
-    const angleDown = round(angleDownUsingDistance(distance));
-    angleText = `Distance: ${angleDown}° (${round(betaRounded - angleDown)})`;
+    const bearingFromUserToPoint = round(bearingBetweenPoints(userLat, userLon, BEIJING_LAT, BEIJING_LON));
+    const diffCurrentBearingAndBearingToPoint = round(relativeDirection(compass, bearingFromUserToPoint));
+    bearingText = `${bearingFromUserToPoint} (${diffCurrentBearingAndBearingToPoint})`;
+    const distanceFromPoint = round(distanceFromLatLonInKm(userLat, userLon, BEIJING_LAT, BEIJING_LON));
+    const angleDownToPoint = round(angleDownUsingDistance(distanceFromPoint));
+    angleText = `${angleDownToPoint}° (${round(betaRounded - angleDownToPoint)})`;
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>alpha: {alphaRounded}</Text>
-      <Text style={styles.title}>beta: {betaRounded}</Text>
-      <Text style={styles.title}>gamma: {gammaRounded}</Text>
+      <View style={styles.row}>
+        <Text style={styles.title}>Heading:</Text>
+        <Text style={styles.title}>{alphaRounded}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.title}>Pitch:</Text>
+        <Text style={styles.title}>{betaRounded}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.title}>Roll:</Text>
+        <Text style={styles.title}>{gammaRounded}</Text>
+      </View>
+
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text style={styles.title}>Coords: {locationText}</Text>
+
+      <View style={styles.row}>
+        <Text style={styles.title}>Coords:</Text>
+        <Text style={styles.title}>{locationText}</Text>
+      </View>
+
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text style={styles.title}>Direction: {compass}°({direction})</Text>
-      <Text style={styles.title}>{bearingText}</Text>
-      <Text style={styles.title}>{angleText}</Text>
+
+      <View style={styles.row}>
+        <Text style={styles.title}>Direction:</Text>
+        <Text style={styles.title}>{compassDirection}°({direction})</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.title}>Bearing To Beijing:</Text>
+        <Text style={styles.title}>{bearingText}</Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.title}>Angle Down:</Text>
+        <Text style={styles.title}>{angleText}</Text>
+      </View>
     </View>
   );
 }
@@ -73,4 +118,10 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
+  row: {
+    width: '90%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  }
 });

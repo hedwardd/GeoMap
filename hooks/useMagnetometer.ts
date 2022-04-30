@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Magnetometer } from 'expo-sensors';
 import { Subscription } from '@unimodules/core';
-import { getAngle, getDegree } from '../utils/calcs';
+import {
+  getAngle,
+  getCompassDirection,
+} from '../utils/calcs';
 
 const useMagnetometer = () => {
   const [magnetometerSub, setMagnetometerSub] = useState<Subscription | null>(null);
@@ -10,7 +13,7 @@ const useMagnetometer = () => {
   const _subToMagnetometer = () => {
     setMagnetometerSub(
       Magnetometer.addListener((data) => {
-        setAngle(getDegree(getAngle(data)));
+        setAngle(getCompassDirection(getAngle(data)));
       })
     );
   };
