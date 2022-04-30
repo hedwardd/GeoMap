@@ -67,15 +67,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     <View style={styles.container}>
       <View style={styles.row}>
         <Text style={styles.title}>Heading:</Text>
-        <Text style={styles.title}>{alphaRounded}</Text>
+        <Text style={styles.title}>{alphaRounded.toFixed()}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>Pitch:</Text>
-        <Text style={styles.title}>{betaRounded}</Text>
+        <Text style={styles.title}>{betaRounded.toFixed()}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>Roll:</Text>
-        <Text style={styles.title}>{gammaRounded}</Text>
+        <Text style={styles.title}>{gammaRounded.toFixed()}</Text>
       </View>
 
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -89,7 +89,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
 
       <View style={styles.row}>
         <Text style={styles.title}>Direction:</Text>
-        <Text style={styles.title}>{compassDirection}°({direction})</Text>
+        <Text style={styles.title}>{compassDirection.toFixed()}°({direction})</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.title}>Bearing To Beijing:</Text>

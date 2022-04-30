@@ -50,7 +50,8 @@ export const getDirection = (degree: number) => {
 
 export const getCompassDirection = (headingFromDevice: number) => {
   // return magnetometer;
-  return headingFromDevice - 90 >= 0 ? headingFromDevice - 90 : headingFromDevice + 271;
+  // return headingFromDevice - 90 >= 0 ? headingFromDevice - 90 : headingFromDevice + 271;
+  return headingFromDevice;
 };
 
 export const deg2rad = (deg: number) => {

@@ -24,31 +24,63 @@ export default function TabThreeScreen({ navigation }: RootTabScreenProps<'TabTh
   // Get coordinates of user's device
   const {
     alpha: heading, // Heading
-    beta: pitch, // Pitch
+    beta: pitchInRad, // Pitch
     gamma: roll, // Roll
     location: userLocation,
+    compass,
     locationError,
   } = useContext(DeviceContext);
 
+  // Wait for location to be set
+  if (!userLocation) return null;
 
   // Approach: Use user's device rotation info, location to map positions of global landmarks on the screen
 
   // Input: User device rotation and coordinates, locations of coordinates
+  const {
+    latitude: userLat,
+    longitude: userLon,
+  } = userLocation.coords;
   
   // Get coordinate of location(s)
+  const [lat, lng] = LOCATIONS[0].coordinates;
 
-  // For each location
-    // Get vertical position from 
-    // Get horizontal position as offset
-      // Bearing diff - roll diff?
+  
+  // TODO: For each location
+  // Get vertical position from 
+  const pitch = rad2deg(pitchInRad);
+  const distanceFromPoint = round(distanceFromLatLonInKm(userLat, userLon, lat, lng));
+  const angleDownToPoint = round(angleDownUsingDistance(distanceFromPoint));
+  const upDownAngle = (pitch - angleDownToPoint);
+  const upDownPercentOffScreen = (upDownAngle / 90);
+  
+  // Get horizontal position as offset
+  const bearingFromUserToPoint = bearingBetweenPoints(userLat, userLon, lat, lng);
+  const leftRightAngle = relativeDirection(compass, bearingFromUserToPoint);
+  const leftRightPercentOffScreen = (leftRightAngle / 90);
 
-
+  const center = 0.5;
+  const leftPosition = center - leftRightPercentOffScreen;
+  const topPosition = center - upDownPercentOffScreen;
+  
   // Output: Element on screen with position relative to user's device
   
 
   return (
     <View style={styles.container}>
-
+      <View style={styles.contentWrapper}>
+        <Text>upDownAngle: {upDownAngle.toFixed()}</Text>
+        <Text>leftRightAngle: {leftRightAngle.toFixed()}</Text>
+      </View>
+      <View>
+        <Text
+          style={{
+            ...styles.location,
+            left: leftPosition * 100 + '%',
+            top: topPosition * 100 + '%',
+          }}
+        >Beijing</Text>
+      </View>
     </View>
   );
 }
@@ -56,7 +88,20 @@ export default function TabThreeScreen({ navigation }: RootTabScreenProps<'TabTh
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    justifyContent: 'center',
   },
+  contentWrapper: {
+    height: '45%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  location: {
+    fontSize: 20,
+    position: 'absolute',
+  }
 });
